@@ -9,6 +9,8 @@ import math
 
 counter = itertools.count()
 
+digits_to_round = 5
+
 
 class BBTreeNode:
     def __init__(self, vars=[], constraints=[], objective="", prob=None):
@@ -81,10 +83,39 @@ class BBTreeNode:
         root = self
         res = root.buildProblem().solve(solver="cvxopt")
         heap = [(res, next(counter), root)]
-        print(heap)
         bestres = -1e20  # a small arbitrary initial best objective value
         bestnode_vars = root.vars  # initialize bestnode_vars to the root vars
 
-        # TODO: fill this part in
+        while heap:
+            (last_res, _, last_problem) = heappop(heap)
+
+            for primal in last_res.primals:
+                if round(primal, digits_to_round) % 1 != 0:
+                    print(
+                        "Var",
+                        primal,
+                        "is not integral.  Objective is:",
+                        last_problem.objective,
+                    )
+                    # Split the problem
+                    upper = self.branch_ceil(primal)
+                    lower = self.branch_floor(primal)
+                    for branch in (upper, lower):
+                        print("Problem:", branch.prob)
+                        try:
+                            res = branch.prob.solve(solver="cvxopt")
+                        except pic.modeling.problem.SolutionFailure:
+                            print("Prune: infeasible")
+                            continue
+                        if branch.objective.value < bestres:
+                            print("Prune: objective less than best so far")
+                        else:
+                            print("Pushing the branch to the heap")
+                            heappush(heap, (res, next(counter), branch))
+                    break
+            else:
+                print("Prune: int solution")
+                print("All vars are ints, objective is:", last_problem.objective)
+                # TODO: Compare to best, optionally save
 
         return bestres, bestnode_vars
