@@ -92,35 +92,22 @@ class BBTreeNode:
 
             for primal in last_res.primals:
                 if round(primal, digits_to_round) % 1 != 0:
-                    print(
-                        "Var",
-                        primal.name,
-                        "==",
-                        primal.value,
-                        "is not integral.  Objective is:",
-                        last_problem.objective,
-                    )
                     # Split the problem
                     upper = last_problem.branch_ceil(primal)
                     lower = last_problem.branch_floor(primal)
                     for branch in (upper, lower):
-                        print("Problem:", branch.prob)
-                        # print("Constraints:", branch.prob.constraints)
                         try:
                             res = branch.prob.solve(solver="cvxopt")
                         except pic.modeling.problem.SolutionFailure:
-                            print("Prune: infeasible")
                             continue
                         if branch.objective.value < bestres:
-                            print("Prune: objective less than best so far")
+                            pass  # Pruned: less than best so far
                         else:
-                            print("Pushing the branch to the heap")
                             heappush(heap, (next(counter), res, branch))
-                            print("Heap size:", len(heap))
                     break
             else:
-                print("Prune: int solution")
-                print("All vars are ints, objective is:", last_problem.objective)
-                # TODO: Compare to best, optionally save
+                if bestres < last_problem.objective.value:
+                    bestres = last_problem.objective.value
+                    bestnode_vars = last_problem.vars
 
         return bestres, bestnode_vars
