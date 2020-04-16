@@ -82,26 +82,30 @@ class BBTreeNode:
         # these lines build up the initial problem and adds it to a heap
         root = self
         res = root.buildProblem().solve(solver="cvxopt")
-        heap = [(res, next(counter), root)]
+        heap = [(next(counter), res, root)]
         bestres = -1e20  # a small arbitrary initial best objective value
         bestnode_vars = root.vars  # initialize bestnode_vars to the root vars
 
         while heap:
-            (last_res, _, last_problem) = heappop(heap)
+            (_, last_res, last_problem) = heappop(heap)
+            # print("Loaded constraints:", last_problem.prob.constraints)
 
             for primal in last_res.primals:
                 if round(primal, digits_to_round) % 1 != 0:
                     print(
                         "Var",
-                        primal,
+                        primal.name,
+                        "==",
+                        primal.value,
                         "is not integral.  Objective is:",
                         last_problem.objective,
                     )
                     # Split the problem
-                    upper = self.branch_ceil(primal)
-                    lower = self.branch_floor(primal)
+                    upper = last_problem.branch_ceil(primal)
+                    lower = last_problem.branch_floor(primal)
                     for branch in (upper, lower):
                         print("Problem:", branch.prob)
+                        # print("Constraints:", branch.prob.constraints)
                         try:
                             res = branch.prob.solve(solver="cvxopt")
                         except pic.modeling.problem.SolutionFailure:
@@ -111,7 +115,8 @@ class BBTreeNode:
                             print("Prune: objective less than best so far")
                         else:
                             print("Pushing the branch to the heap")
-                            heappush(heap, (res, next(counter), branch))
+                            heappush(heap, (next(counter), res, branch))
+                            print("Heap size:", len(heap))
                     break
             else:
                 print("Prune: int solution")
