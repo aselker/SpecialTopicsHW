@@ -27,15 +27,40 @@ def cvrp_ip(C, q, K, Q, obj=True):
     C = np.append(C, (C[0])[np.newaxis].T, 1)  # Add a column
     C = np.append(C, [C[0]], 0)  # Add a row
 
+    q = np.append(np.array(q), [0])  # Add a 0 for the destination node
+
     # set up the picos problem
     prob = pic.Problem()
 
-    # TODO: add variables, constraints, and objective function!
+    x = pic.BinaryVariable("x", C.shape)
+    u = pic.RealVariable("u", C.shape[0])
+    obj = pic.RealVariable("obj")
 
-    x = []
-    objective_value = 0
+    prob.add_constraint(sum(x[0, :]) <= K)
+    prob.add_constraint(sum(x[:, -1]) <= K)
+    prob.add_constraint(sum(x[0, :]) == sum(x[:, -1]))
 
-    return objective_value, x
+    for i in range(1, C.shape[0] - 1):
+        prob.add_constraint(sum(x[i, :]) == 1)
+        prob.add_constraint(sum(x[:, i]) == 1)
+
+    for i in range(C.shape[0]):
+        prob.add_constraint(q[i] <= u[i])
+        prob.add_constraint(u[i] <= Q)
+        for j in range(C.shape[0]):
+            prob.add_constraint(u[i] - u[j] + (Q * x[i, j]) <= Q - q[j])
+
+    prob.add_constraint(obj == sum(C ^ x))
+
+    prob.set_objective("min", obj)
+    soln = prob.solve()
+
+    print(C)
+    print(x.value)
+    print(C ^ x)
+    print(sum(C ^ x))
+
+    return obj.value, x.value
 
 
 # Local search approach (OPTIONAL)
