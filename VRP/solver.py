@@ -22,9 +22,10 @@ def cvrp_ip(C, q, K, Q, obj=True):
         objective_value: value of the minimum travel cost
         x: matrix representing number of routes that use each arc
     """
-    # TODO: add in destination node (same distances as source & demand = 0)
-    C = deepcopy(C)  # Just in case
-    print(C)
+
+    # np.append returns a copy, so we can do this w/o side effects outside this function
+    C = np.append(C, (C[0])[np.newaxis].T, 1)  # Add a column
+    C = np.append(C, [C[0]], 0)  # Add a row
 
     # set up the picos problem
     prob = pic.Problem()
