@@ -19,6 +19,8 @@ def run_all_tests():
     """
     fail_count = 0
 
+    """
+
     # example with 5 nodes & 4 vehicles (quickest to run for initial testing)
     C, q, K, Q = read_file_type_A("data/A-n05-k04.xml")
     travel_cost, x = cvrp_ip(C, q, K, Q)
@@ -37,6 +39,8 @@ def run_all_tests():
         print("Test case with 16 nodes & 3 vehicles failed.")
         fail_count += 1
 
+    """
+
     # example with 16 nodes and 5 vehicles
     C, q, K, Q = read_file_type_A("data/A-n016-k05.xml")
     travel_cost, x = cvrp_ip(C, q, K, Q)
@@ -46,6 +50,8 @@ def run_all_tests():
         print("Test case with 16 nodes and 5 vehicles failed.")
         fail_count += 1
 
+    """
+
     # example with 13 nodes and 4 vehicles
     C, q, K, Q = read_file_type_C("data/C-n013-k04.xml")
     travel_cost, x = cvrp_ip(C, q, K, Q)
@@ -54,6 +60,8 @@ def run_all_tests():
     except AssertionError:
         print("Test case with 13 nodes and 4 vehicles failed.")
         fail_count += 1
+
+    """
 
     print("All tests completed with " + str(fail_count) + " failure(s).")
 

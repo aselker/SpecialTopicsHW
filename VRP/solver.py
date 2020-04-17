@@ -36,6 +36,9 @@ def cvrp_ip(C, q, K, Q, obj=True):
     u = pic.RealVariable("u", C.shape[0])
     obj = pic.RealVariable("obj")
 
+    prob.add_constraint(sum(x[-1, :]) == 0)
+    prob.add_constraint(sum(x[:, 0]) == 0)
+
     prob.add_constraint(sum(x[0, :]) <= K)
     prob.add_constraint(sum(x[:, -1]) <= K)
     prob.add_constraint(sum(x[0, :]) == sum(x[:, -1]))
