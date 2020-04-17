@@ -55,11 +55,6 @@ def cvrp_ip(C, q, K, Q, obj=True):
     prob.set_objective("min", obj)
     soln = prob.solve()
 
-    print(C)
-    print(x.value)
-    print(C ^ x)
-    print(sum(C ^ x))
-
     return obj.value, x.value
 
 
